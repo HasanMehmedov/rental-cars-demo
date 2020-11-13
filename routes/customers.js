@@ -25,6 +25,19 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+router.post('/', async (req, res) => {
+
+    try {
+        validateCustomer(req.body);
+
+        const result = await createCustomer(req.body);
+        res.send(result);
+    }
+    catch (err) {
+        res.status(err.status).send(err.message);
+    }
+});
+
 async function getCustomers() {
     const customers = await Customer.find();
 
@@ -40,13 +53,24 @@ async function getCustomers() {
 async function getCustomer(id) {
     const customer = await Customer.findById(id);
 
-    if(!customer) {
+    if (!customer) {
         const notFoundError = new Error(`Customer with ID: ${id} was not found.`);
         notFoundError.status = 404;
         throw notFoundError;
     }
 
     return customer;
+}
+
+async function createCustomer(params) {
+    const customer = new Customer({
+        name: params.name,
+        email: params.email,
+        phone: params.phone
+    });
+
+    const result = await customer.save();
+    return result;
 }
 
 module.exports = router;
