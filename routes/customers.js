@@ -38,6 +38,18 @@ router.post('/', async (req, res) => {
     }
 });
 
+router.put('/:id', async (req, res) => {
+    const customerId = req.params.id;
+
+    try {
+        const result = await updateCustomer(customerId, req.body);
+        res.send(result);
+    }
+    catch (err) {
+        res.status(err.status).send(err.message);
+    }
+});
+
 async function getCustomers() {
     const customers = await Customer.find();
 
@@ -64,6 +76,33 @@ async function getCustomer(id) {
 
 async function createCustomer(params) {
     const customer = new Customer({
+        name: params.name,
+        email: params.email,
+        phone: params.phone
+    });
+
+    const result = await customer.save();
+    return result;
+}
+
+async function updateCustomer(id, params) {
+    const customer = await getCustomer(id);
+
+    if(!params.name) {
+        params.name = customer.name;
+    }
+
+    if(!params.email) {
+        params.email = customer.email;
+    }
+
+    if(!params.phone) {
+        params.phone = customer.phone;
+    }
+
+    validateCustomer(params);
+
+    customer.set({
         name: params.name,
         email: params.email,
         phone: params.phone
