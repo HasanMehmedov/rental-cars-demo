@@ -24,7 +24,7 @@ router.get('/:id', async (req, res) => {
     catch (err) {
         res.status(err.status).send(err.message);
     }
-})
+});
 
 router.post('/', async (req, res) => {
 
