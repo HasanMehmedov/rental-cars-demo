@@ -33,7 +33,7 @@ const Customer = mongoose.model('Customer', customerSchema);
 function validateCustomer(customer) {
     const validationSchema = {
         name: Joi.string().min(2).max(255).required(),
-        email: Joi.string().min(5).max(255),
+        email: Joi.string().min(5).max(255).email(),
         phone: Joi.string().min(6).max(10).regex(new RegExp(PHONE_NUMBER_REGEX)).required()
             .error(errors => {
                 errors.forEach(error => {
