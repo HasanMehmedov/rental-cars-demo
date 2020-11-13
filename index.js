@@ -2,10 +2,12 @@ const express = require('express');
 const mongoose = require('mongoose');
 const app = express();
 const cars = require('./routes/cars');
+const customers = require('./routes/customers');
 const home = require('./routes/home');
 
 app.use(express.json());
 app.use('/api/cars', cars);
+app.use('/api/customers', customers);
 app.use('/', home);
 
 mongoose.connect('mongodb://localhost/cars')
