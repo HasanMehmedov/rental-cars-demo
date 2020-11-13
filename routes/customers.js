@@ -50,6 +50,18 @@ router.put('/:id', async (req, res) => {
     }
 });
 
+router.delete('/:id', async (req, res) => {
+    const customerId = req.params.id;
+
+    try {
+        const result = await deleteCustomer(customerId);
+        res.send(result);
+    }
+    catch (err) {
+        res.status(err.status).send(err.message);
+    }
+});
+
 async function getCustomers() {
     const customers = await Customer.find();
 
@@ -88,15 +100,15 @@ async function createCustomer(params) {
 async function updateCustomer(id, params) {
     const customer = await getCustomer(id);
 
-    if(!params.name) {
+    if (!params.name) {
         params.name = customer.name;
     }
 
-    if(!params.email) {
+    if (!params.email) {
         params.email = customer.email;
     }
 
-    if(!params.phone) {
+    if (!params.phone) {
         params.phone = customer.phone;
     }
 
@@ -110,6 +122,12 @@ async function updateCustomer(id, params) {
 
     const result = await customer.save();
     return result;
+}
+
+async function deleteCustomer(id) {
+    const customer = await getCustomer(id);
+    await Customer.deleteOne({ _id: id });
+    return customer;
 }
 
 module.exports = router;
