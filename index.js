@@ -5,11 +5,13 @@ const Joi = require('joi');
 Joi.objectId = require('joi-objectid')(Joi);
 const cars = require('./routes/cars');
 const customers = require('./routes/customers');
+const rentals = require('./routes/rentals');
 const home = require('./routes/home');
 
 app.use(express.json());
 app.use('/api/cars', cars);
 app.use('/api/customers', customers);
+app.use('/api/rentals', rentals);
 app.use('/', home);
 
 mongoose.connect('mongodb://localhost/cars')
