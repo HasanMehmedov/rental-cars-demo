@@ -23,8 +23,12 @@ async function createUser(params) {
         password: params.password
     });
 
-    const result = await user.save();
-    return result;
+    await user.save();
+
+    return {
+        name: user.name,
+        email: user.email
+    };
 }
 
 module.exports = router;
