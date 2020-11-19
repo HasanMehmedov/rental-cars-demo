@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const { User, validateUser } = require('../models/user');
+const bcrypt = require('bcrypt');
 const express = require('express');
 const router = express.Router();
 
@@ -17,10 +18,13 @@ router.post('/', async (req, res) => {
 });
 
 async function createUser(params) {
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(params.password, salt);
+
     const user = new User({
         name: params.name,
         email: params.email,
-        password: params.password
+        password: hashedPassword
     });
 
     await user.save();

@@ -1,6 +1,5 @@
 const Joi = require('joi');
 const mongoose = require('mongoose');
-const PASSWORD_REGEX = /^\w{8,255}$/;
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -20,13 +19,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
         minlength: 8,
-        maxlength: 255,
-        validate: {
-            validator: function (v) {
-                return v.match(PASSWORD_REGEX);
-            },
-            message: 'Invalid password!'
-        }
+        maxlength: 1024
     }
 });
 
@@ -36,16 +29,7 @@ async function validateUser(user) {
     const validationSchema = {
         name: Joi.string().min(2).max(255).required(),
         email: Joi.string().email().min(5).max(255).required(),
-        password: Joi.string().min(8).max(255).regex(new RegExp(PASSWORD_REGEX)).required()
-            .error(errors => {
-                errors.forEach(error => {
-                    if (error.type === 'string.regex.base') {
-                        error.message = 'Invalid password!';
-                    }
-                });
-
-                return errors;
-            })
+        password: Joi.string().min(8).max(1024).required()
     }
 
     const { error } = Joi.validate(user, validationSchema);
