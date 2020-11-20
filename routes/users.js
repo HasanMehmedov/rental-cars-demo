@@ -1,4 +1,5 @@
-const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
+const config = require('config');
 const { User, validateUser } = require('../models/user');
 const bcrypt = require('bcrypt');
 const express = require('express');
@@ -10,7 +11,8 @@ router.post('/', async (req, res) => {
         await validateUser(req.body);
 
         const result = await createUser(req.body);
-        res.send(result);
+        const token = jwt.sign({ id: result.id, name: result.name, email: result.email }, config.get('jwtPrivateKey'));
+        res.header('x-auth-token', token).send(result);
     }
     catch (err) {
         res.status(err.status).send(err.message);
@@ -30,6 +32,7 @@ async function createUser(params) {
     await user.save();
 
     return {
+        id: user._id,
         name: user.name,
         email: user.email
     };
