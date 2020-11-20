@@ -13,8 +13,8 @@ router.post('/', async (req, res) => {
         const user = await validateEmail(req.body.email);
         await validatePassword(user, req.body.password);
 
-        const token = jwt.sign({ id: user._id, name: user.name }, config.get('jwtPrivateKey'));
-        res.send(token);
+        const token = user.generateAuthToken();
+        res.header('x-auth-token', token).send({ name: user.name, email: user.email });
     }
     catch (err) {
         res.status(err.status).send(err.message);

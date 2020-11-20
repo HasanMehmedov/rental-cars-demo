@@ -1,3 +1,5 @@
+const jwt = require('jsonwebtoken');
+const config = require('config');
 const Joi = require('joi');
 const mongoose = require('mongoose');
 
@@ -23,6 +25,11 @@ const userSchema = new mongoose.Schema({
     }
 });
 
+userSchema.methods.generateAuthToken = function () {
+    const token = jwt.sign({ id: this._id, name: this.name, email: this.email }, config.get('jwtPrivateKey'));
+    return token;
+}
+
 const User = mongoose.model('User', userSchema);
 
 async function validateUser(user) {
@@ -40,7 +47,7 @@ async function validateUser(user) {
     }
 
     const emailAlreadyTaken = await User.findOne({ email: user.email });
-    if(emailAlreadyTaken) {
+    if (emailAlreadyTaken) {
         const emailAlreadyTakenError = new Error('Email\'s already taken.');
         emailAlreadyTakenError.status = 400;
         throw emailAlreadyTakenError;

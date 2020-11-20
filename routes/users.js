@@ -11,8 +11,8 @@ router.post('/', async (req, res) => {
         await validateUser(req.body);
 
         const result = await createUser(req.body);
-        const token = jwt.sign({ id: result.id, name: result.name, email: result.email }, config.get('jwtPrivateKey'));
-        res.header('x-auth-token', token).send(result);
+        const token = result.generateAuthToken();
+        res.header('x-auth-token', token).send({ name: result.name, email: result.email });
     }
     catch (err) {
         res.status(err.status).send(err.message);
@@ -31,11 +31,7 @@ async function createUser(params) {
 
     await user.save();
 
-    return {
-        id: user._id,
-        name: user.name,
-        email: user.email
-    };
+    return user;
 }
 
 module.exports = router;
