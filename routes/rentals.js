@@ -2,6 +2,7 @@ const express = require('express');
 const { Rental, validateRental } = require('../models/rental');
 const { Car } = require('../models/car');
 const { Customer } = require('../models/customer');
+const auth = require('../middlewares/auth');
 const router = express.Router();
 
 router.get('/', async (req, res) => {
@@ -26,7 +27,7 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-router.post('/', async (req, res) => {
+router.post('/', auth, async (req, res) => {
     try {
         validateRental(req.body);
 

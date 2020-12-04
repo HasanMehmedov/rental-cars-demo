@@ -1,5 +1,7 @@
 const express = require('express');
 const { Car, validateCar } = require('../models/car');
+const auth = require('../middlewares/auth');
+const admin = require('../middlewares/admin');
 const router = express.Router();
 
 router.get('/', async (req, res) => {
@@ -26,7 +28,7 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-router.post('/', async (req, res) => {
+router.post('/', auth, async (req, res) => {
 
     try {
         validateCar(req.body);
@@ -39,7 +41,7 @@ router.post('/', async (req, res) => {
     }
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', auth, async (req, res) => {
 
     try {
         const carId = req.params.id;
@@ -52,7 +54,7 @@ router.put('/:id', async (req, res) => {
     }
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', [auth, admin], async (req, res) => {
 
     try {
         const carId = req.params.id;
