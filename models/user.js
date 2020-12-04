@@ -22,11 +22,15 @@ const userSchema = new mongoose.Schema({
         required: true,
         minlength: 8,
         maxlength: 1024
+    },
+    isAdmin: {
+        type: Boolean,
+        default: false
     }
 });
 
 userSchema.methods.generateAuthToken = function () {
-    const token = jwt.sign({ id: this._id, name: this.name, email: this.email }, config.get('jwtPrivateKey'));
+    const token = jwt.sign({ id: this._id, name: this.name, email: this.email, isAdmin: this.isAdmin }, config.get('jwtPrivateKey'));
     return token;
 }
 
@@ -36,7 +40,8 @@ async function validateUser(user) {
     const validationSchema = {
         name: Joi.string().min(2).max(255).required(),
         email: Joi.string().email().min(5).max(255).required(),
-        password: Joi.string().min(8).max(1024).required()
+        password: Joi.string().min(8).max(255).required(),
+        isAdmin: Joi.boolean()
     }
 
     const { error } = Joi.validate(user, validationSchema);
@@ -46,11 +51,11 @@ async function validateUser(user) {
         throw validationError;
     }
 
-    const emailAlreadyTaken = await User.findOne({ email: user.email });
-    if (emailAlreadyTaken) {
-        const emailAlreadyTakenError = new Error('Email\'s already taken.');
-        emailAlreadyTakenError.status = 400;
-        throw emailAlreadyTakenError;
+    const emailExists = await User.findOne({ email: user.email });
+    if (emailExists) {
+        const emailExistsError = new Error('Email\'s already taken.');
+        emailExistsError.status = 400;
+        throw emailExistsError;
     }
 }
 

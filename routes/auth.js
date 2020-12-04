@@ -3,6 +3,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const router = express.Router();
 const { User } = require('../models/user');
+const INVALID_EMAIL_OR_PASSWORD_MESSAGE = 'Invalid email or password.';
 
 router.post('/', async (req, res) => {
 
@@ -22,7 +23,7 @@ router.post('/', async (req, res) => {
 function validateAuth(auth) {
     const validationSchema = {
         email: Joi.string().email().min(5).max(255).required(),
-        password: Joi.string().min(8).max(1024).required()
+        password: Joi.string().min(8).max(255).required()
     }
 
     const { error } = Joi.validate(auth, validationSchema);
@@ -36,7 +37,7 @@ function validateAuth(auth) {
 async function validateEmail(email) {
     const user = await User.findOne({ email: email });
     if (!user) {
-        const validationError = new Error('Invalid email or password.');
+        const validationError = new Error(INVALID_EMAIL_OR_PASSWORD_MESSAGE);
         validationError.status = 400;
         throw validationError;
     }
@@ -48,7 +49,7 @@ async function validatePassword(user, password) {
 
     const isValid = await bcrypt.compare(password, user.password);
     if (!isValid) {
-        const validationError = new Error('Invalid email or password.');
+        const validationError = new Error(INVALID_EMAIL_OR_PASSWORD_MESSAGE);
         validationError.status = 400;
         throw validationError;
     }

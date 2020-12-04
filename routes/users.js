@@ -30,7 +30,8 @@ async function createUser(params) {
     const user = new User({
         name: params.name,
         email: params.email,
-        password: hashedPassword
+        password: hashedPassword,
+        isAdmin: params.isAdmin
     });
 
     await user.save();

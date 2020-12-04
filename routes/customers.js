@@ -1,6 +1,7 @@
 const express = require('express');
 const { Customer, validateCustomer } = require('../models/customer');
 const auth = require('../middlewares/auth');
+const admin = require('../middlewares/admin');
 const router = express.Router();
 
 router.get('/', async (req, res) => {
@@ -51,7 +52,7 @@ router.put('/:id', auth, async (req, res) => {
     }
 });
 
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', [auth, admin], async (req, res) => {
     const customerId = req.params.id;
 
     try {
