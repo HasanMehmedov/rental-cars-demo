@@ -3,81 +3,79 @@ const { Car, validateCar } = require('../models/car');
 const auth = require('../middlewares/auth');
 const admin = require('../middlewares/admin');
 const router = express.Router();
+const SYSTEM_ERROR_MESSAGE = 'Something failed.';
 
 router.get('/', async (req, res) => {
 
-    try {
-        const cars = await getCars();
-        res.send(cars);
-    }
-    catch (err) {
-        res.send(err.message);
-    }
+    const cars = await getCars();
+    res.send(cars);
 });
 
 router.get('/:id', async (req, res) => {
 
-    try {
-        const carId = req.params.id;
-        const car = await getCar(carId);
+    const carId = req.params.id;
+    const car = await getCar(carId);
 
-        res.send(car);
-    }
-    catch (err) {
-        res.status(err.status).send(err.message);
-    }
+    res.send(car);
 });
 
 router.post('/', auth, async (req, res) => {
 
-    try {
-        validateCar(req.body);
+    validateCar(req.body);
 
-        const result = await createCar(req.body);
-        res.send(result);
-    }
-    catch (err) {
-        res.status(err.status).send(err.message);
-    }
+    const result = await createCar(req.body);
+    res.send(result);
 });
 
 router.put('/:id', auth, async (req, res) => {
 
-    try {
-        const carId = req.params.id;
+    const carId = req.params.id;
 
-        const result = await updateCar(carId, req.body);
-        res.send(result);
-    }
-    catch (err) {
-        res.status(err.status).send(err.message);
-    }
+    const result = await updateCar(carId, req.body);
+    res.send(result);
 });
 
 router.delete('/:id', [auth, admin], async (req, res) => {
 
-    try {
-        const carId = req.params.id;
-        const result = await deleteCar(carId);
+    const carId = req.params.id;
+    const result = await deleteCar(carId);
 
-        res.send(result);
-    }
-    catch (err) {
-        res.status(err.status).send(err.message);
-    }
+    res.send(result);
 });
 
 async function getCars() {
+    let cars;
 
-    const cars = await Car.find();
-    if (!cars || cars.length === 0) throw new Error(`There are no saved cars.`);
+    try {
+        cars = await Car.find();
+    }
+    catch (err) {
+        const systemError = new Error(SYSTEM_ERROR_MESSAGE);
+        systemError.status = 500;
+        throw systemError;
+    }
+
+    if (!cars || cars.length === 0) {
+        const notFoundError = new Error('There are no saved cars.');
+        notFoundError.status = 404;
+        throw notFoundError;
+    }
 
     return cars;
 }
 
 async function getCar(id) {
+    let car;
 
-    const car = await Car.findById(id);
+    try {
+        car = await Car.findById(id);
+    }
+    catch (err) {
+        const systemError = new Error(SYSTEM_ERROR_MESSAGE);
+        systemError.status = 500;
+        throw systemError;
+    }
+
     if (!car) {
         const err = new Error(`Car with id: ${id} does not exist.`);
         err.status = 404;
@@ -93,7 +91,16 @@ async function createCar(params) {
         year: params.year
     });
 
-    const result = await car.save();
+    let result;
+    try {
+        result = await car.save();
+    }
+    catch (err) {
+        const systemError = new Error(SYSTEM_ERROR_MESSAGE);
+        systemError.status = 500;
+        throw systemError;
+    }
+
     return result;
 }
 
@@ -114,13 +121,32 @@ async function updateCar(id, params) {
         year: params.year
     });
 
-    const result = await car.save();
+    let result;
+
+    try {
+        result = await car.save();
+    }
+    catch (err) {
+        const systemError = new Error(SYSTEM_ERROR_MESSAGE);
+        systemError.status = 500;
+        throw systemError;
+    }
+
     return result;
 }
 
 async function deleteCar(id) {
     const car = await getCar(id);
-    await Car.deleteOne({ _id: id });
+
+    try {
+        await Car.deleteOne({ _id: id });
+    }
+    catch (err) {
+        const systemError = new Error(SYSTEM_ERROR_MESSAGE);
+        systemError.status = 500;
+        throw systemError;
+    }
+
     return car;
 }
 

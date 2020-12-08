@@ -2,70 +2,58 @@ const express = require('express');
 const { Customer, validateCustomer } = require('../models/customer');
 const auth = require('../middlewares/auth');
 const admin = require('../middlewares/admin');
+const SYSTEM_ERROR_MESSAGE = 'Something failed.';
 const router = express.Router();
 
 router.get('/', async (req, res) => {
 
-    try {
-        const customers = await getCustomers();
-        res.send(customers);
-    }
-    catch (err) {
-        res.status(err.status).send(err.message);
-    }
+    const customers = await getCustomers();
+    res.send(customers);
 });
 
 router.get('/:id', async (req, res) => {
+
     const customerId = req.params.id;
 
-    try {
-        const customer = await getCustomer(customerId);
-        res.send(customer);
-    }
-    catch (err) {
-        res.status(err.status).send(err.message);
-    }
+    const customer = await getCustomer(customerId);
+    res.send(customer);
 });
 
 router.post('/', auth, async (req, res) => {
 
-    try {
-        validateCustomer(req.body);
+    validateCustomer(req.body);
 
-        const result = await createCustomer(req.body);
-        res.send(result);
-    }
-    catch (err) {
-        res.status(err.status).send(err.message);
-    }
+    const result = await createCustomer(req.body);
+    res.send(result);
 });
 
 router.put('/:id', auth, async (req, res) => {
-    const customerId = req.params.id;
 
-    try {
-        const result = await updateCustomer(customerId, req.body);
-        res.send(result);
-    }
-    catch (err) {
-        res.status(err.status).send(err.message);
-    }
+    const customerId = req.params.id;
+    
+    const result = await updateCustomer(customerId, req.body);
+    res.send(result);
 });
 
 router.delete('/:id', [auth, admin], async (req, res) => {
+    
     const customerId = req.params.id;
 
-    try {
-        const result = await deleteCustomer(customerId);
-        res.send(result);
-    }
-    catch (err) {
-        res.status(err.status).send(err.message);
-    }
+    const result = await deleteCustomer(customerId);
+    res.send(result);
 });
 
 async function getCustomers() {
-    const customers = await Customer.find();
+
+    let customers;
+    try {
+        customers = await Customer.find();
+    }
+    catch (err) {
+        const systemError = new Error(SYSTEM_ERROR_MESSAGE);
+        systemError.status = 500;
+        throw systemError;
+    }
 
     if (!customers || customers.length === 0) {
         const notFoundError = new Error('There are no saved customers.');
@@ -77,7 +65,16 @@ async function getCustomers() {
 }
 
 async function getCustomer(id) {
-    const customer = await Customer.findById(id);
+
+    let customer;
+    try {
+        customer = await Customer.findById(id);
+    }
+    catch (err) {
+        const systemError = new Error(SYSTEM_ERROR_MESSAGE);
+        systemError.status = 500;
+        throw systemError;
+    }
 
     if (!customer) {
         const notFoundError = new Error(`Customer with ID: ${id} was not found.`);
@@ -89,17 +86,28 @@ async function getCustomer(id) {
 }
 
 async function createCustomer(params) {
+
     const customer = new Customer({
         name: params.name,
         email: params.email,
         phone: params.phone
     });
 
-    const result = await customer.save();
+    let result;
+    try {
+        result = await customer.save();
+    }
+    catch (err) {
+        const systemError = new Error(SYSTEM_ERROR_MESSAGE);
+        systemError.status = 500;
+        throw systemError;
+    }
+
     return result;
 }
 
 async function updateCustomer(id, params) {
+
     const customer = await getCustomer(id);
 
     if (!params.name) {
@@ -122,13 +130,32 @@ async function updateCustomer(id, params) {
         phone: params.phone
     });
 
-    const result = await customer.save();
+    let result;
+    try {
+        result = await customer.save();
+    }
+    catch (err) {
+        const systemError = new Error(SYSTEM_ERROR_MESSAGE);
+        systemError.status = 500;
+        throw systemError;
+    }
+
     return result;
 }
 
 async function deleteCustomer(id) {
+
     const customer = await getCustomer(id);
-    await Customer.deleteOne({ _id: id });
+
+    try {
+        await Customer.deleteOne({ _id: id });
+    }
+    catch (err) {
+        const systemError = new Error(SYSTEM_ERROR_MESSAGE);
+        systemError.status = 500;
+        throw systemError;
+    }
+
     return customer;
 }
 
